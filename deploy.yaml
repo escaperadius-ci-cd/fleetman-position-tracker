@@ -1,43 +1,41 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: position-tracker
-spec:
-  selector:
-    matchLabels:
-      app: position-tracker
-  replicas: 1
-  template: # template for the pods
-    metadata:
-      labels:
-        app: position-tracker
-    spec:
-      containers:
-      - name: position-tracker
-        image: ${REPOSITORY_TAG}
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: production-microservice
-        imagePullPolicy: Always
-        readinessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: fleetman-position-tracker
+package com.virtualpairprogrammers.tracker.messaging;
 
-spec:
-  # This defines which pods are going to be represented by this Service
-  # The service becomes a network endpoint for either other services
-  # or maybe external users to connect to (eg browser)
-  selector:
-    app: position-tracker
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Map;
 
-  ports:
-    - name: http
-      port: 8090
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Component;
 
-  type: ClusterIP
+import com.virtualpairprogrammers.tracker.data.Data;
+import com.virtualpairprogrammers.tracker.domain.VehicleBuilder;
+import com.virtualpairprogrammers.tracker.domain.VehiclePosition;
+
+@Component
+public class MessageProcessor {
+	
+	@Autowired
+	private Data data;
+	
+	@Value("${fleetman.position.queue}")
+	private String queueName;
+	
+	@JmsListener(destination="${fleetman.position.queue}")
+	public void processPositionMessageFromQueue(Map<String, String> incomingMessage ) throws ParseException 
+	{
+		Date convertedDatestamp = new java.util.Date();
+		
+		VehiclePosition newReport = new VehicleBuilder()
+				                          .withName(incomingMessage.get("vehicle"))
+				                          .withLat(new BigDecimal(incomingMessage.get("lat")))
+				                          .withLng(new BigDecimal(incomingMessage.get("long")))
+				                          .withTimestamp(convertedDatestamp)
+				                          .build();
+				                          
+		data.updatePosition(newReport);
+	}
+
+}
