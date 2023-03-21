@@ -1,33 +1,3 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Codespaces
-Marketplace
-Explore
- 
-@escaperadius 
-fleetman-ci-cd-demo
-/
-fleetman-position-tracker
-Public
-Fork your own copy of fleetman-ci-cd-demo/fleetman-position-tracker
-Code
-Issues
-Pull requests
-2
-Actions
-Projects
-Security
-Insights
-fleetman-position-tracker/deploy.yaml
-@DickChesterwood
-DickChesterwood fixing bad image name
-Latest commit 8495bb5 on Apr 29, 2019
- History
- 1 contributor
-Executable File  43 lines (40 sloc)  976 Bytes
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,16 +13,16 @@ spec:
         app: position-tracker
     spec:
       containers:
-      - name: position-tracker
-        image: ${REPOSITORY_TAG}
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: production-microservice
-        imagePullPolicy: Never
-        readinessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
+        - name: position-tracker
+          image: ${REPOSITORY_TAG}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: production-microservice
+          imagePullPolicy: Never
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -71,18 +41,3 @@ spec:
       port: 8080
 
   type: ClusterIP
-Footer
-© 2023 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-fleetman-position-tracker/deploy.yaml at master · fleetman-ci-cd-demo/fleetman-position-tracker
